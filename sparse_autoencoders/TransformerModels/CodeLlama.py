@@ -1,13 +1,14 @@
 import torch
 import deepspeed
 
-from transformers import LlamaForCausalLM, CodeLlamaTokenizer
+from transformers import LlamaForCausalLM, CodeLlamaTokenizer, LlamaTokenizer
 
 from .TransformerModels import TransformerModelWrapper
 
 """
 Implementations of TransformerModelWrapper for CodeLlama
 """
+
 class CodeLlamaModel(TransformerModelWrapper):
     def __init__(self, model, tokenizer=None, device="cpu"):
         super().__init__(model, tokenizer=tokenizer, device=device)
@@ -16,10 +17,9 @@ class CodeLlamaModel(TransformerModelWrapper):
         self.model = LlamaForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
 
     def load_tokenizer_from_name(self, tokenizer_name):
-        self.tokenizer = CodeLlamaTokenizer.from_pretrained(tokenizer_name)
+        self.tokenizer = LlamaTokenizer.from_pretrained(tokenizer_name)
 
-    def generate_instructive(self, system_prompt, user_prompt, top_p=0.9, temperature=0.1, max_new_tokens=500,
-                             add_special_tokens=True):
+    def generate_instructive(self, system_prompt, user_prompt, top_p=0.9, temperature=0.1, max_new_tokens=500, add_special_tokens=True):
         prompt = f"[INST]<<SYS>>{system_prompt}<</SYS>>\n{user_prompt}[/INST]"
 
         return self.generate_on_prompt(prompt, top_p=top_p, temperature=temperature, max_new_tokens=max_new_tokens,
